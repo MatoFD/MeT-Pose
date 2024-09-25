@@ -1,0 +1,7 @@
+---
+out_dir: ./results/exp1/run1
+sys_test: holistic
+dataset_name: FLIC
+met_rules:
+    - img-mirror:
+        flip_code: -1

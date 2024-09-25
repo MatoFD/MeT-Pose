@@ -1,0 +1,8 @@
+---
+out_dir: ./earlyExamples/mock_results/try_single_file_results
+sys_test: holistic
+small_sample: true
+met_rules:
+    - img-rotation:
+          rotation_angle: 30
+          center: (0.2, 1)

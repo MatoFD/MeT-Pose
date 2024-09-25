@@ -1,0 +1,9 @@
+---
+out_dir: ./earlyExamples/mock_results/try_single_file_results
+sys_test: holistic
+small_sample: true
+met_rules:
+    - img-masked:
+          mask_type: hair
+          applied_rule: img_color_channels
+          channel_multipliers: (1, 0, 0.5)
