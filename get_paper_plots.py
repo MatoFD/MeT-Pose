@@ -16,6 +16,19 @@ rules_per_group = {
     "AllMotionBlur": ["all_rules_in_img-motion-blur"]
 }
 
+# First run the testing framework on the SUT to get the raw results information to analyse
+
+subprocess.run(['python', 'run_many_settings_exp.py', '-results_folder=./Results/'])
+
+# Second call convert_pickled_results_to_csv to prepare the raw_diffs.csv files that we need to aggregate the data
+# as reported in this work.
+print("translating flic dataframes to csvs")
+subprocess.run(['python', 'convert_pickled_results_to_csv.py', '-res_dir=./Results/', '-dataset=FLIC', '-data_type=test'])
+
+print("translating phoenix dataframes to csvs")
+subprocess.run(['python', 'convert_pickled_results_to_csv.py', '-res_dir=./Results/', '-dataset=phoenix', '-data_type=dev'])
+
+# Lastly get the specific results reported in this work
 
 #possible_features = ["left_hand", "right_hand", "face", "pose", "gt"]
 #possible_image_aggregations = ["mean", "median", "max", "min"]

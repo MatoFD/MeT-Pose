@@ -171,8 +171,20 @@ if __name__ == '__main__':
     parser.add_argument('-res_dir', '--results_folder', type=str,  required=True,
                         help='string path to the folder where the results and the logs will be saved. The results'
                              'might occupy 50kb per image in inputs')
+    parser.add_argument('-dataset', type=str, required=True,
+                        help='FLIC or phoenix')
+    parser.add_argument('-data_type', type=str, required=True,
+                        help='test, dev, etc.')
+    parser.add_argument('-save_raw_diffs', type=bool, default=True,
+                        help='If set to true, saves in -res_dir the raw_diffs.csv files from the data in the dataframes.'
+                             'This is the data used to analyze the errors of the SUT, but does not save the keypoints'
+                             'Default to True')
+    parser.add_argument('-save_raw_keypoints', type=bool, default=False,
+                        help='If set to true, saves in -res_dir the raw_keypoints.csv files from the data in the dataframes.'
+                             'This is not the errors info we need to test the system, but can be used in other ways in the future'
+                             'Default to False')
     args = parser.parse_args()
 
     do_dataframe_csv_translation(args.results_folder,
-                             [("FLIC", "test"), ("phoenix", "dev")],
-                             True, False)
+                             [(args.dataset, args.data_type)],
+                             args.save_raw_diffs, args.save_raw_keypoints)
