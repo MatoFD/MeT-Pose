@@ -1,4 +1,5 @@
 # Import packages
+import argparse
 import glob
 import math
 import os
@@ -15,58 +16,32 @@ import plotly.express as px
 from metamorphic_rules import instantiate_rules
 
 
-# Settings that can be changed======
+# Possible implemented settings, can be expanded======
 possible_features = ["left_hand", "right_hand", "face", "pose", "gt"]
 possible_image_aggregations = ["mean", "median", "max", "min"]
 possible_cross_img_aggregations = ["table_subsumption_ratios", "histogram_failed_images_across_thresholds",
                                    "gt_vs_metamorphic_failed_tests_across_thresholds", "images_failed_per_num_of_rules"]
-SubRels = ["identity", "img-black-white", "no-rule-orig-landmarks",
-             "img-blur_10_3", "img-blur_125_5", "img-blur_80_7",
-             "img-dark-bright_20_0.8_1.2_scale", "img-dark-bright_20_1.2_0.5_gamma",
-             "img-mirror_1",
-             "img-motion-blur_11_0", "img-motion-blur_11_100", "img-resolution_0.2",
-             "img-resolution_0.7", "img-rotation_5_(0.5, 0.5)", "img-rotation_10_(0.5, 0.5)",
-             "img-stretch_1.25_1", "img-stretch_1_0.6", "img-stretch_1_0.8",
-             "img-masked_background_img-color-wheel_90", "img-masked_hair_img-color-wheel_90",]
 
-base_results_folder = './Results/'
-
-base_images_folder = './Datasets'
-
-dataset = 'FLIC-test'  # phoenix-dev
-
-results_selection = ["pose", "gt"]  # l_hand, r_hand, face
-
-scores_selection = "median"  # mean, max, min
-
-column_selection = "histogram_failed_images_across_thresholds"
-
-subsumption_error_threshold = 0.2
-
-range_error_thresholds = "[0.01, 0.05, 0.1, 0.2, 0.3, 0.7, 1, 2, 5, 20, 9999999]"
-
-build_transformed_images = False
 #=======
-# script to put down in main
+def find_all_rules_results(base_results_folder, dataset):
+    def natural_sort(l):
+        # https: // stackoverflow.com / questions / 11150239 / natural - sorting
+        convert = lambda text: int(text) if text.isdigit() else text.lower()
+        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+        return sorted(l, key=alphanum_key)
+
+    # Find all rules ran in experiment, by finding raw_diffs files
+    input_filepaths = glob.glob(base_results_folder + f"{dataset}/" + f"{dataset}" + "*")
+    all_possible_rules = natural_sort([filename.rpartition(f"{dataset}-")[2].rpartition("-raw_diffs")[0]
+                                  for filename in input_filepaths if "raw_diffs" in filename])
 
 
-def natural_sort(l):
-    # https: // stackoverflow.com / questions / 11150239 / natural - sorting
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-    return sorted(l, key=alphanum_key)
-
-# Find all rules ran in experiment, by finding raw_diffs files
-input_filepaths = glob.glob(base_results_folder + f"{dataset}/" + f"{dataset}" + "*")
-all_possible_rules = natural_sort([filename.rpartition(f"{dataset}-")[2].rpartition("-raw_diffs")[0]
-                              for filename in input_filepaths if "raw_diffs" in filename])
-
-
-# organize the rules in coarse, which group the different settings that we try for example for blur
-coarse_possible_rules = sorted(list(set([rule.split('_')[0] for rule in all_possible_rules])))
-coarse_possible_rules = {rule_group: [rule for rule in all_possible_rules if rule_group in rule]
-                         for rule_group in coarse_possible_rules}
-all_possible_rules = [rule for group in coarse_possible_rules for rule in coarse_possible_rules[group]]
+    # organize the rules in coarse, which group the different settings that we try for example for blur
+    coarse_possible_rules = sorted(list(set([rule.split('_')[0] for rule in all_possible_rules])))
+    coarse_possible_rules = {rule_group: [rule for rule in all_possible_rules if rule_group in rule]
+                             for rule_group in coarse_possible_rules}
+    all_possible_rules = [rule for group in coarse_possible_rules for rule in coarse_possible_rules[group]]
+    return all_possible_rules
 #===========================
 
 
@@ -193,14 +168,14 @@ def table_subsumption(all_plot_data, rules, features, img_aggr, error_threshold)
                                     for failed_1, failed_2 in zip(errors_per_img_rule_1, errors_per_img_rule_2)])
 
             if num_errors_1 == 0:
-                data[i][j] = 1  # if rule_1 never finds any faults, it is completely subsumed
+                data[i][j] = 1  # if rule_1 never finds any faults, it subsumes completely
             else:
                 data[i][j] = errors_in_common / num_errors_1
 
     pretty_rules_names = [rule.replace('img-', '').replace('masked_', '').replace('color-', '').replace('dark-bright', 'brightness') for rule in rules]
     pretty_rules_names = ['brightness_gamma_'+rule.split('_')[-2] if "gamma" in rule else rule for rule in pretty_rules_names]
     pretty_rules_names = ['brightness_scale_'+'_'.join(rule.split('_')[1:3]) if "scale" in rule else rule for rule in pretty_rules_names]
-    fig = px.imshow(data, labels=dict(x="subsuming rule", y="subsumed rule", color="subsumption rate"),
+    fig = px.imshow(data, labels=dict(x="subsumed rule", y="subsuming rule", color="subsumption rate"),
                     x=pretty_rules_names, y=pretty_rules_names, text_auto=True)
     fig.update_traces(texttemplate='%{text:.2f}')
     fig.update_xaxes(side="top", tickangle=45)
@@ -223,11 +198,7 @@ def select_final_rules(rules_to_plot, plot_all_rules, all_possible_rules):
 
     return rules_to_plot
 
-# TODO rules_selected_to_plot = [input list] or "all" -> all_possible_rules or "subRels" -> subRels? or "all from X group"
-rules_selected_to_plot = select_final_rules(input_selected_rules)
-
-
-def show_modified_images(rules_selected_to_plot, dataset, base_images_folder):
+def save_modified_images(rules_selected_to_plot, dataset, base_images_folder):
 
     original_images_paths = []
     images_to_show = []
@@ -284,10 +255,7 @@ def show_modified_images(rules_selected_to_plot, dataset, base_images_folder):
 
 
 def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plot_type, dataset, error_threshold,
-                  base_results_folder, range_thresholds, build_images_bool):
-
-    if build_images_bool:
-        show_modified_images(rules_selected_to_plot, dataset, base_images_folder)
+                  base_results_folder, range_thresholds, rules_codename):
 
     threshold_buckets = list(map(float, range_thresholds.strip("[]").split(", ")))
     threshold_buckets = [(-0.0000001, threshold_buckets[i]) if i == 0 else
@@ -322,13 +290,13 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
     print("full dataset to plot")
     print(all_plot_data)
 
+    latex_table = None
 
     list_rules_to_plot = [rule for rule_coarse_group in rules_selected_to_plot for rule in rule_coarse_group]
 
     # here start the different plotting options
     if plot_type == "table_subsumption_ratios":
         fig, plotted_dataframe = table_subsumption(all_plot_data, list_rules_to_plot, keypoint_type, aggregation_metric, error_threshold)
-        fig.show()
 
     elif plot_type == "images_failed_per_num_of_rules":
         if len(keypoint_type) > 1:
@@ -384,9 +352,10 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
         print("table_df:")
         print(table_df)
 
+        plotted_dataframe = table_df
+        fig = None
         latex_table = table_df.to_latex(index_names=False, index=False)
-        # return no fig plot but the table to the div children
-        return latex_table
+
 
     elif (plot_type == "histogram_failed_images_across_thresholds"
           or plot_type == "gt_vs_metamorphic_failed_tests_across_thresholds"):
@@ -494,20 +463,96 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
     else:
         raise ValueError(f"Need to implement this plot {plot_type}")
 
-    fig.update_layout(
-        title={'text': dataset.split('-')[1], 'y': 0.93},
-        font_size=22
-    )
-    fig.show()
+    plots_folder = "./plots"
+    pathlib.Path(plots_folder).mkdir(parents=True, exist_ok=True)
+
+    if fig is not None:
+        fig.update_layout(
+            title={'text': dataset.split('-')[1], 'y': 0.93},
+            font_size=22
+        )
+        fig.write_image(f"{plots_folder}/{plot_type}_{keypoint_type}_{dataset}_{rules_codename}.pdf")
 
     print(f"plotted_dataframe: \n {plotted_dataframe}")
-    rules_file_name = list_rules_to_plot if len(list_rules_to_plot) < 4 else len(list_rules_to_plot)
-    plots_csvs_folder = "./plots/plots_csvs"
-    pathlib.Path(plots_csvs_folder).mkdir(parents=True, exist_ok=True)
-    plotted_dataframe.to_csv(f"{plots_csvs_folder}/{plot_type}_{keypoint_type}_{dataset}_rulesLen{rules_file_name}.csv")
-    return fig
+    plotted_dataframe.to_csv(f"{plots_folder}/{plot_type}_{keypoint_type}_{dataset}_{rules_codename}.csv")
+
+    if latex_table is not None:
+        with open(f"{plots_folder}/{plot_type}_{keypoint_type}_{dataset}_{rules_codename}_latex.txt", "w") as file:
+            file.write(latex_table)
+
+    return
 
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='')
 
+    parser.add_argument('-res_dir', '--base_results_folder', type=str, default='./Results/',  # required=True,
+                        help='Path to the folder with the csv files. If no value is provided "./Results/" is used as'
+                             'default.')
+    parser.add_argument('-data_dir', '--base_images_folder', type=str, default='./Datasets/',  # required=True,
+                        help='Path to the folder with the csv files. If no value is provided "./Datasets/" is used as'
+                             'default.')
+    parser.add_argument('-dataset', '--dataset', type=str, required=True,
+                        help='What dataset inside of the data_dir folder to plot. Can be FLIC-test, phoenix-dev, etc.')
+    parser.add_argument('-kp_type', '--keypoints_type', nargs='+', type=str, required=True, choices=possible_features,
+                        help=f'What type of keypoints to aggregate, can be more than one. From {possible_features}.'
+                             f' gt is for ground truth, and needs to be included when comparing'
+                             'the metamorphic testing results to ground truth based results')
+    parser.add_argument('-img_aggr', '--kp_aggregation_metric', type=str, default='median', choices=possible_image_aggregations,
+                        help=f'How to aggregate keypoints errors in an image to one value. Can be {possible_image_aggregations}'
+                             'If not value is provided, default is "median"')
+    parser.add_argument('-plot_type', '--plot_type', type=str, choices=possible_cross_img_aggregations,
+                        help='How to aggregate keypoints errors in an image to one value. Can be one of '
+                             f'{possible_cross_img_aggregations}.'
+                             f'"histogram_failed_images_across_thresholds" was used for RQ1, '
+                              '"gt_vs_metamorphic_failed_tests_across_thresholds", was used for RQ2,'
+                             f'"table_subsumption_ratios" was used for RQ3 subsumption heatmaps. '
+                             ' "images_failed_per_num_of_rules" was used for RQ3 table')
+    parser.add_argument('-err_thresh', '--error_threshold', default=0.2,
+                        help='What error threshold to use for RQ3 subsumption heatmaps and number of images failed per'
+                             'number of metamorphic rules. If not provided, default value is 0.2. Ignored for the other'
+                             'plot types')
+    parser.add_argument('-rg_errs_threshs', '--range_errors_thresholds', type=str,
+                        default="[0.01, 0.05, 0.1, 0.2, 0.3, 0.7, 1, 2, 5, 20, 9999999]",
+                        help='List of values of error thresholds to plot for RQ1 and RQ2 bar plots.'
+                             'If no value is provided "[0.01, 0.05, 0.1, 0.2, 0.3, 0.7, 1, 2, 5, 20, 9999999]"'
+                             'is used as default.'
+                             '9999999 or any very high value is the stand in for "inf" type errors')
+    parser.add_argument('-save_mod_imgs', '--save_modified_images', type=bool, default=True,
+                        help='If set to true, saves in "./modified_images" some examples of images of the dataset'
+                             'after being modified by all the metamorphic transformations listed as input to this script'
+                             'Default to True')
+    parser.add_argument('-metR', '--metamorphic_rules', nargs='+', type=str, required=True,
+                        help='List of metamorphic rules to take into account when plotting how many images failed'
+                             )
+    parser.add_argument('-rules_codename', type=str, required=True,
+                        help='Name to easily recognize saved results'
+                        )
+
+    # Check which metRules are in the program arguments and parse their relevant kwargs
+    recognized_args, unrecognized_args = parser.parse_known_args()
+
+    base_results_folder = recognized_args.base_results_folder
+    base_images_folder = recognized_args.base_images_folder
+    dataset = recognized_args.dataset  # 'FLIC-test', 'phoenix-dev', etc.
+    kp_type = recognized_args.kp_type  # ["pose", "gt"]
+    img_aggr = recognized_args.img_aggr
+    plot_type = recognized_args.plot_type
+    error_threshold = recognized_args.error_threshold
+    range_error_thresholds = recognized_args.rg_errs_threshs
+    save_modified_images = recognized_args.save_mod_imgs
+    input_rules_to_plot = recognized_args.metamorphic_rules
+    rules_codename = recognized_args.rules_codename
+
+    all_possible_rules = find_all_rules_results(base_results_folder, dataset)
+    if input_rules_to_plot == "AllRels":
+        rules_selected_to_plot = select_final_rules([], True, all_possible_rules)
+    else:
+        rules_selected_to_plot = select_final_rules(input_rules_to_plot, False, all_possible_rules)
+
+    if save_modified_images:
+        save_modified_images(rules_selected_to_plot, dataset, base_images_folder)
+
+    compute_graph(rules_selected_to_plot, kp_type, img_aggr, plot_type, dataset, error_threshold,
+                  base_results_folder, range_error_thresholds, rules_codename)
