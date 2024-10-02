@@ -2,7 +2,7 @@ The main use for this project is run by calling
 python main_test.py -config=config_file_path
 
 ===== To install the conda environment ====
-conda install --file=./test-ignorance-assumption-env.yml
+conda env create -f=./MeT-Pose-env.yml
 
 
 ===== Running the main files to generate the landmarks and differences ====
