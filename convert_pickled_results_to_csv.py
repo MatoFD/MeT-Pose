@@ -59,8 +59,10 @@ def do_dataframe_csv_translation(base_folder, datasets_and_types_list, save_raw_
         no_rule_outputs.sort_index(inplace=True)
 
         for input_filepath in tqdm(input_filepaths, desc=f"converting files for {dataset}, {data_type}"):
-            # if os.path.isfile(input_filepath + "-raw_diffs.csv"):
-            #     continue
+            # if it was already translated, skip
+            if ((os.path.isfile(input_filepath + "-raw_diffs.csv") or not save_raw_diffs) and
+               (os.path.isfile(input_filepath + "-raw_keypoints.csv") or not save_raw_keypoints)):
+                continue
 
             table = pandas.read_pickle(input_filepath)
             # pickled_df_columns: "system", "input_name", "met_rules", "eval_diffs", "diff_with_gt", "system_outs"

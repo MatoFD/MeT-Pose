@@ -34,4 +34,4 @@ def get_modified_img_path(sample_filepath, met_rule, data_type, dataset_name):
         new_image_path = modif_video_folder + "/" + frame_name
         return new_image_path
     else:
-        return None
+        raise(ValueError, "wrong dataset name in get_modified img path")
