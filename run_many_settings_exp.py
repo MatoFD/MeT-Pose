@@ -154,6 +154,8 @@ if __name__ == '__main__':
     parser.add_argument('-results_folder', '--results_folder', type=str,  required=True,
                         help='string path to the folder where the results and the logs will be saved. The results'
                              'might occupy 50kb per image in inputs')
+    parser.add_argument('-no_phoenix', '--no_phoenix', action="store_true",
+                        help='if this flag is used, the phoenix dataset will be skipped during processing')
     args = parser.parse_args()
 
     results_folder = args.results_folder
@@ -162,7 +164,13 @@ if __name__ == '__main__':
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     print(f"saving detailed logs in {log_file}")
 
-    for dataset, data_type in [("FLIC", "test"), ("phoenix", "dev")]:
+    skip_phoenix = args.no_phoenix
+    if skip_phoenix:
+        datasets = [("FLIC", "test")]
+    else:
+        datasets = [("FLIC", "test"), ("phoenix", "dev")]
+
+    for dataset, data_type in datasets:
         for rule, settings in settings_per_rule.items():
             for single_run_settings in settings:
                 run_num = 1

@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 rules_per_group = {
     "AllRels": "AllRels",
@@ -16,17 +17,24 @@ rules_per_group = {
     "AllMotionBlur": ["all_rules_in_img-motion-blur"]
 }
 
-# First run the testing framework on the SUT to get the raw results information to analyse
+# by default, do all the experiment including phoenix-dev, unless the user wants to skip it due to time and space constraints
+include_phoenix_processing = True
+if len(sys.argv) > 1 and sys.argv[1] == "no_phoenix":
+    include_phoenix_processing = False
+    print("skipping phoenix, only doing FLIC")
 
-subprocess.run(['python', 'run_many_settings_exp.py', '-results_folder=./Results/'])
+# First run the testing framework on the SUT to get the raw results information to analyse
+phoenix = "-no_phoenix" if not include_phoenix_processing else ""
+subprocess.run(['python', 'run_many_settings_exp.py', '-results_folder=./Results/', phoenix])
 
 # Second call convert_pickled_results_to_csv to prepare the raw_diffs.csv files that we need to aggregate the data
 # as reported in this work.
 print("translating flic dataframes to csvs")
 subprocess.run(['python', 'convert_pickled_results_to_csv.py', '-res_dir=./Results/', '-dataset=FLIC', '-data_type=test'])
 
-print("translating phoenix dataframes to csvs")
-subprocess.run(['python', 'convert_pickled_results_to_csv.py', '-res_dir=./Results/', '-dataset=phoenix', '-data_type=dev'])
+if include_phoenix_processing:
+    print("translating phoenix dataframes to csvs")
+    subprocess.run(['python', 'convert_pickled_results_to_csv.py', '-res_dir=./Results/', '-dataset=phoenix', '-data_type=dev'])
 
 # Lastly get the specific results reported in this work
 
@@ -43,16 +51,21 @@ subprocess.run(['python', 'convert_pickled_results_to_csv.py', '-res_dir=./Resul
 
 print("doing RQ1 results")
 for rules_codename in ['AllRels', 'SubRels', "GreyAndMirr"]:
-    for dataset in ['FLIC-test', 'phoenix-dev']:
+    if include_phoenix_processing:
+        datasets = ['FLIC-test', 'phoenix-dev']
+    else:
+        datasets = ['FLIC-test']
+    for dataset in datasets:
         subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose',
                         '-plot_type=histogram_failed_images_across_thresholds', f'-rules_codename={rules_codename}',
                         f'metR={rules_per_group[rules_codename]}'])
 
-for rules_codename in ["MirrorH", "Greyscale"]:
-    dataset = 'phoenix-dev'
-    subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=l_hand', 'r_hand',
-                    '-plot_type=histogram_failed_images_across_thresholds', f'-rules_codename={rules_codename}',
-                    f'metR={rules_per_group[rules_codename]}'])
+if include_phoenix_processing:
+    for rules_codename in ["MirrorH", "Greyscale"]:
+        dataset = 'phoenix-dev'
+        subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=l_hand', 'r_hand',
+                        '-plot_type=histogram_failed_images_across_thresholds', f'-rules_codename={rules_codename}',
+                        f'metR={rules_per_group[rules_codename]}'])
 
 print("doing RQ2 results")
 for rules_codename in ['AllRels', 'SubRels', "Greyscale", "MirrorH"]:
@@ -63,13 +76,17 @@ for rules_codename in ['AllRels', 'SubRels', "Greyscale", "MirrorH"]:
 
 print("doing RQ3 results")
 for rules_codename in ['SubRels', "AllMotionBlur"]:
-    for dataset in ['FLIC-test', 'phoenix-dev']:
+    if include_phoenix_processing:
+        datasets = ['FLIC-test', 'phoenix-dev']
+    else:
+        datasets = ['FLIC-test']
+    for dataset in datasets:
         subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose'
                         '-plot_type=table_subsumption_ratios', f'-rules_codename={rules_codename}',
                         f'metR={rules_per_group[rules_codename]}'])
 
 rules_codename = "AllRels"
-for dataset in ['FLIC-test', 'phoenix-dev']:
+for dataset in datasets:
     subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose'
                     '-plot_type=images_failed_per_num_of_rules', f'-rules_codename={rules_codename}',
                     f'metR={rules_per_group[rules_codename]}'])
