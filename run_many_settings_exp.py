@@ -162,8 +162,7 @@ if __name__ == '__main__':
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     print(f"saving detailed logs in {log_file}")
 
-    for dataset, data_type in [("FLIC-full", "all"), ("FLIC", "all"), ("FLIC", "test"),
-                               ("phoenix", "dev"), ("phoenix", "test")]:
+    for dataset, data_type in [("FLIC", "test"), ("phoenix", "dev")]:
         for rule, settings in settings_per_rule.items():
             for single_run_settings in settings:
                 run_num = 1
