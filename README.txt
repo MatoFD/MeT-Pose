@@ -1,6 +1,8 @@
 The main use for this project is run by calling
 python main_test.py -config=config_file_path
 
+The project works on Linux systems
+
 ===== To install the conda environment ====
 conda env create -f=./MeT-Pose-env.yml
 conda activate MeT-Pose
@@ -10,6 +12,8 @@ conda activate MeT-Pose
 Running "python get_paper_plots.py" will run through the experiments and save the csv outputs used for the plots in the paper.
 Might need up to 100GB for phoenix-dev results. Alternativelly, can also run "python get_paper_plots.py -no_phoenix" for only the FLIC results which run faster and need less space.
 
+The intermediate csvs and dataframes will be saved in ./Results/, and the final csvs used for the reported plots, and similar plots will be saved in ./plots/
+Some examples of modified images will be saved in ./modified_images/
 
 ===== details, not needed to compute the reporte results =====
 
