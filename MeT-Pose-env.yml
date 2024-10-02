@@ -6,7 +6,9 @@ dependencies:
   - matplotlib=3.8.*
   - PyYAML=6.0.*
   - tqdm=4.65.*
+  - plotly
   - pip
   - pip:
     - opencv-python==4.9.*
     - mediapipe==0.10.*
+    - kaleido
