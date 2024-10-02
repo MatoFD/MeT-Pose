@@ -173,8 +173,7 @@ if __name__ == '__main__':
     for dataset, data_type in datasets:
         for rule, settings in settings_per_rule.items():
             for single_run_settings in settings:
-                run_num = 1
-                out_file_prefix = f"{results_folder}/run{run_num}"
+                out_file_prefix = f"{results_folder}/"
                 # it doesn't always save to the same file, to the out_file the rule and settings are appended inside the script
                 config_file_path = "./runs_settings/exp2_current_config.yml"
 

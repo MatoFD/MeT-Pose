@@ -1,9 +1,0 @@
----
-out_dir: ./results/exp2//run1
-sys_test: holistic
-data_type: test
-dataset_name: FLIC
-met_rules:
-    - img-stretch:
-        height_ratio: 0.95
-        width_ratio: 1.05

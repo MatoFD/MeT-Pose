@@ -47,7 +47,7 @@ def do_dataframe_csv_translation(base_folder, datasets_and_types_list, save_raw_
             flic_data = flic_data.set_index([flic_data["video_name"], flic_data["image_name"]]).sort_index()
             # flic_data.drop(columns="image_name", inplace=True)
 
-        input_filepaths = glob.glob(base_folder + f"run1-{dataset}-{data_type}/" + f"run1-{dataset}-{data_type}" + "*")
+        input_filepaths = glob.glob(base_folder + f"{dataset}-{data_type}/" + f"{dataset}-{data_type}" + "*")
         input_filepaths = sorted([filepath for filepath in input_filepaths if ".json" not in filepath and ".csv" not in filepath])
 
         # grab the no-rule system_outs, for when we need to recompute the diffs with other rules

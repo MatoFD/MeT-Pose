@@ -463,7 +463,6 @@ def test_holistic(met_rules, results_filepath, kwargs):
     rule_str = instantiate_rules.rule_and_kwargs_to_complex_rule_str(met_rules)
 
     # results will be saved in a folder like this example: {out_dir}/run1-phoenix-dev/run1-phoenix-dev-{rule}
-    # so when running evaluate_results.py, results can be aggregated in {out_dir}/run1-phoenix-dev.csv
     run_description = results_filepath.split(os.sep)[-1] + f"-{dataset_name}-{data_type}"
     results_folder = results_filepath.removesuffix(results_filepath.split(os.sep)[-1]) + run_description + "/"
     results_path_of_current_rule = results_folder + run_description + "-" + rule_str
