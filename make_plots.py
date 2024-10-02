@@ -40,8 +40,8 @@ def find_all_rules_results(base_results_folder, dataset):
     coarse_possible_rules = sorted(list(set([rule.split('_')[0] for rule in all_possible_rules])))
     coarse_possible_rules = {rule_group: [rule for rule in all_possible_rules if rule_group in rule]
                              for rule_group in coarse_possible_rules}
-    all_possible_rules = [rule for group in coarse_possible_rules for rule in coarse_possible_rules[group]]
-    return all_possible_rules
+    #all_possible_rules = [rule for group in coarse_possible_rules for rule in coarse_possible_rules[group]]
+    return coarse_possible_rules
 #===========================
 
 
@@ -96,7 +96,7 @@ def load_update_data_from_disk(base_folder, dataset_name, feature, img_aggr, sel
     """ if file exists, load csv dataframe. If requested img_aggr exist, return it.
      Otherwise compute it and add value/column and save the csv. """
 
-    cache_folder = "./results/plots_data/"
+    cache_folder = "./Results/plots_data/"
 
     if not os.path.isdir(cache_folder):
         os.makedirs(cache_folder, exist_ok=True)
@@ -190,11 +190,11 @@ def table_subsumption(all_plot_data, rules, features, img_aggr, error_threshold)
 def select_final_rules(rules_to_plot, plot_all_rules, all_possible_rules):
     if plot_all_rules:
         rules_to_plot = [[rule for rule in all_possible_rules[group]] for group in all_possible_rules.keys()]
-
-    for i, rules_list in enumerate(rules_to_plot):
-        all_rules = any(["all_rules_in_" in specific_rule for specific_rule in rules_list])
-        rules_list = [] if (len(rules_list)==0 or "none" in rules_list) else (all_possible_rules[rules_list[0].split('_')[-1]] if all_rules else rules_list)
-        rules_to_plot[i] = rules_list
+    else:
+        for i, rules_list in enumerate(rules_to_plot):
+            all_rules = any(["all_rules_in_" in specific_rule for specific_rule in rules_list])
+            rules_list = [] if (len(rules_list)==0 or "none" in rules_list) else (all_possible_rules[rules_list[0].split('_')[-1]] if all_rules else [rules_list])
+            rules_to_plot[i] = rules_list
 
     return rules_to_plot
 
@@ -239,7 +239,7 @@ def save_modified_images(rules_selected_to_plot, dataset, base_images_folder):
                 extra_kwargs = {'image_filepath': full_image_path,
                                 'save_modified_images': False,
                                 'data_type': dataset.split('-')[-1],
-                                'dataset_name': dataset.split('-')[1]}
+                                'dataset_name': dataset.split('-')[-2]}
                 modified_image = met_rule_instance.apply(orig_image, extra_kwargs)
                 cv2.putText(modified_image, rule, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                             (255, 255, 255), 1, 2)
@@ -445,6 +445,8 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
                 lambda row: (row["failed_images"].sum()) / len(row["failed_images"]), axis=1
             )
 
+        if plot_type == "histogram_failed_images_across_thresholds":
+            histogram_df.drop("failed_images", inplace=True, axis=1)
         print("final histogram df to plot")
         print(histogram_df)
         plotted_dataframe = histogram_df
@@ -495,7 +497,7 @@ if __name__ == '__main__':
                              'default.')
     parser.add_argument('-dataset', '--dataset', type=str, required=True,
                         help='What dataset inside of the data_dir folder to plot. Can be FLIC-test, phoenix-dev, etc.')
-    parser.add_argument('-kp_type', '--keypoints_type', nargs='+', type=str, required=True, choices=possible_features,
+    parser.add_argument('-kp_type', '--keypoints_type', action='append', type=str, required=True, choices=possible_features,
                         help=f'What type of keypoints to aggregate, can be more than one. From {possible_features}.'
                              f' gt is for ground truth, and needs to be included when comparing'
                              'the metamorphic testing results to ground truth based results')
@@ -523,7 +525,8 @@ if __name__ == '__main__':
                         help='If set to true, saves in "./modified_images" some examples of images of the dataset'
                              'after being modified by all the metamorphic transformations listed as input to this script'
                              'Default to True')
-    parser.add_argument('-metR', '--metamorphic_rules', nargs='+', type=str, required=True,
+    # TODO change save_mod_imgs bool mechanic. For now it is always true
+    parser.add_argument('-metR', '--metamorphic_rules', type=str, required=True,
                         help='List of metamorphic rules to take into account when plotting how many images failed'
                              )
     parser.add_argument('-rules_codename', type=str, required=True,
@@ -536,23 +539,28 @@ if __name__ == '__main__':
     base_results_folder = recognized_args.base_results_folder
     base_images_folder = recognized_args.base_images_folder
     dataset = recognized_args.dataset  # 'FLIC-test', 'phoenix-dev', etc.
-    kp_type = recognized_args.kp_type  # ["pose", "gt"]
-    img_aggr = recognized_args.img_aggr
+    kp_type = recognized_args.keypoints_type  # ["pose", "gt"]
+    img_aggr = recognized_args.kp_aggregation_metric
     plot_type = recognized_args.plot_type
     error_threshold = recognized_args.error_threshold
-    range_error_thresholds = recognized_args.rg_errs_threshs
-    save_modified_images = recognized_args.save_mod_imgs
+    range_error_thresholds = recognized_args.range_errors_thresholds
+    save_modified_images_flag = recognized_args.save_modified_images
     input_rules_to_plot = recognized_args.metamorphic_rules
     rules_codename = recognized_args.rules_codename
 
-    all_possible_rules = find_all_rules_results(base_results_folder, dataset)
+    coarse_possible_rules = find_all_rules_results(base_results_folder, dataset)
     if input_rules_to_plot == "AllRels":
-        rules_selected_to_plot = select_final_rules([], True, all_possible_rules)
+        rules_selected_to_plot = select_final_rules([], True, coarse_possible_rules)
+    elif input_rules_to_plot == "all_rules_in_img-motion-blur":
+        rules_selected_to_plot = select_final_rules(input_rules_to_plot, False, coarse_possible_rules)
     else:
-        rules_selected_to_plot = select_final_rules(input_rules_to_plot, False, all_possible_rules)
+        input_rules_to_plot = input_rules_to_plot.split(",")
+        rules_selected_to_plot = select_final_rules(input_rules_to_plot, False, coarse_possible_rules)
 
-    if save_modified_images:
-        save_modified_images(rules_selected_to_plot, dataset, base_images_folder)
+    print(f"doing rules {rules_selected_to_plot}")
 
     compute_graph(rules_selected_to_plot, kp_type, img_aggr, plot_type, dataset, error_threshold,
                   base_results_folder, range_error_thresholds, rules_codename)
+
+    if save_modified_images_flag:
+        save_modified_images(rules_selected_to_plot, dataset, base_images_folder)
