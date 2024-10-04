@@ -38,6 +38,7 @@ project-folder
 
 Running "python get_paper_plots.py" will run through the experiments and save the csv outputs used for the plots in the paper.
 Might need more than 100GB for phoenix-dev results. Alternatively, can also run "python get_paper_plots.py -no_phoenix" for only the FLIC results which run faster and need less space.
+If executed with argument "-save_imgs" it saves examples of modified images.
 
 The intermediate csvs and dataframes will be saved in ./Results/, and the final csvs used for the reported plots, and similar plots will be saved in ./plots/
 Some examples of modified images will be saved in ./modified_images/

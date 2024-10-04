@@ -521,11 +521,10 @@ if __name__ == '__main__':
                              'If no value is provided "[0.01, 0.05, 0.1, 0.2, 0.3, 0.7, 1, 2, 5, 20, 9999999]"'
                              'is used as default.'
                              '9999999 or any very high value is the stand in for "inf" type errors')
-    parser.add_argument('-save_mod_imgs', '--save_modified_images', type=bool, default=True,
-                        help='If set to true, saves in "./modified_images" some examples of images of the dataset'
+    parser.add_argument('-save_mod_imgs', '--save_modified_images', action="store_true",
+                        help='If flag is set, saves in "./modified_images" some examples of images of the dataset'
                              'after being modified by all the metamorphic transformations listed as input to this script'
-                             'Default to True')
-    # TODO change save_mod_imgs bool mechanic. For now it is always true
+                             'Default to False')
     parser.add_argument('-metR', '--metamorphic_rules', type=str, required=True,
                         help='List of metamorphic rules to take into account when plotting how many images failed'
                              )

@@ -17,10 +17,18 @@ rules_per_group = {
 }
 
 # by default, do all the experiment including phoenix-dev, unless the user wants to skip it due to time and space constraints
-include_phoenix_processing = True
-if len(sys.argv) > 1 and sys.argv[1] == "no_phoenix":
+if "no_phoenix" in sys.argv:
     include_phoenix_processing = False
     print("skipping phoenix, only doing FLIC")
+else:
+    include_phoenix_processing = True
+
+# by default, we do not need to save modified images every time
+if "save_imgs" in sys.argv:
+    save_mod_imgs = True
+    print("Saving modified images")
+else:
+    save_mod_imgs = False
 
 # First run the testing framework on the SUT to get the raw results information to analyse
 subprocess_commands = ['python', 'run_many_settings_exp.py', '-results_folder=./Results/']
@@ -49,8 +57,7 @@ if include_phoenix_processing:
 #res_dir = './Results/'
 #data_dir = './Datasets/'
 #img_aggr = 'median'
-# TODO change to true
-save_mod_imgs = False
+#save_mod_imgs = False
 
 print("doing RQ1 results")
 for rules_codename in ['AllRels', 'SubRels', "GreyAndMirr"]:
@@ -60,12 +67,12 @@ for rules_codename in ['AllRels', 'SubRels', "GreyAndMirr"]:
         datasets = ['FLIC-test']
     for dataset in datasets:
         if save_mod_imgs:
-            subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose',
+            subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose', '-save_mod_imgs',
                             '-plot_type=histogram_failed_images_across_thresholds', f'-rules_codename={rules_codename}',
                             f'-metR={rules_per_group[rules_codename]}'])
         else:
             subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose',
-                            '-plot_type=histogram_failed_images_across_thresholds', '-save_mod_imgs=False',
+                            '-plot_type=histogram_failed_images_across_thresholds',
                             f'-rules_codename={rules_codename}',
                             f'-metR={rules_per_group[rules_codename]}'])
 
@@ -73,7 +80,7 @@ if include_phoenix_processing:
     for rules_codename in ["MirrorH", "Greyscale"]:
         dataset = 'phoenix-dev'
         subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=left_hand', 'right_hand',
-                        '-plot_type=histogram_failed_images_across_thresholds', '-save_mod_imgs=False',
+                        '-plot_type=histogram_failed_images_across_thresholds',
                         f'-rules_codename={rules_codename}',
                         f'-metR={rules_per_group[rules_codename]}'])
 
@@ -81,7 +88,7 @@ print("doing RQ2 results")
 for rules_codename in ['AllRels', 'SubRels', "Greyscale", "MirrorH"]:
     dataset = 'FLIC-test'
     subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose', '-kp_type=gt',
-                    '-plot_type=gt_vs_metamorphic_failed_tests_across_thresholds', '-save_mod_imgs=False',
+                    '-plot_type=gt_vs_metamorphic_failed_tests_across_thresholds',
                     f'-rules_codename={rules_codename}',
                     f'-metR={rules_per_group[rules_codename]}'])
 
@@ -93,13 +100,13 @@ for rules_codename in ['SubRels', "AllMotionBlur"]:
         datasets = ['FLIC-test']
     for dataset in datasets:
         subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose',
-                        '-plot_type=table_subsumption_ratios', '-save_mod_imgs=False',
+                        '-plot_type=table_subsumption_ratios',
                         f'-rules_codename={rules_codename}',
                         f'-metR={rules_per_group[rules_codename]}'])
 
 rules_codename = "AllRels"
 for dataset in datasets:
     subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose',
-                    '-plot_type=images_failed_per_num_of_rules', '-save_mod_imgs=False',
+                    '-plot_type=images_failed_per_num_of_rules',
                     f'-rules_codename={rules_codename}',
                     f'-metR={rules_per_group[rules_codename]}'])
