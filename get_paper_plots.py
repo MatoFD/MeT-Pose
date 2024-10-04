@@ -42,14 +42,15 @@ if "save_imgs" in sys.argv:
 else:
     save_mod_imgs = False
 
-# First run the testing framework on the SUT to get the raw results information to analyse
+
+#============ First run the testing framework on the SUT to get the raw results information to analyse
 subprocess_commands = ['python', 'run_many_settings_exp.py', '-results_folder=./Results/']
 if not include_phoenix_processing:
     subprocess_commands += ["-no_phoenix"]
-# TODO uncomment
-#subprocess.run(subprocess_commands)
+subprocess.run(subprocess_commands)
 
-# Second call convert_pickled_results_to_csv to prepare the raw_diffs.csv files that we need to aggregate the data
+
+#=========== Second call convert_pickled_results_to_csv to prepare the raw_diffs.csv files that we need to aggregate the data
 # as reported in this work.
 print("translating flic dataframes to csvs")
 subprocess.run(['python', 'convert_pickled_results_to_csv.py', '-res_dir=./Results/', '-dataset=FLIC', '-data_type=test'])
@@ -58,7 +59,8 @@ if include_phoenix_processing:
     print("translating phoenix dataframes to csvs")
     subprocess.run(['python', 'convert_pickled_results_to_csv.py', '-res_dir=./Results/', '-dataset=phoenix', '-data_type=dev'])
 
-# Lastly get the specific results reported in this work
+
+#============ Lastly get the specific results reported in this work
 
 #possible_features = ["left_hand", "right_hand", "face", "pose", "gt"]
 #possible_image_aggregations = ["mean", "median", "max", "min"]

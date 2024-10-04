@@ -245,8 +245,6 @@ def create_or_load_results_file(results_pathname, results_columns):
 
 
 def save_results_to_disk(new_results_list, results_columns, old_results_pd, results_path_of_current_rule):
-    # TODO have to modify how we save now that we do csv instead of pickle, and saving all the separate diffs
-    # TODO look at aux_scripts.convert_pickled_results_to_csv.py
     df_to_concat = pd.DataFrame(new_results_list, columns=results_columns)
     df_to_concat = df_to_concat.set_index("input_name", drop=False)
     if len(old_results_pd) != 0:
