@@ -270,7 +270,7 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
     # have been saved, and the video and image name to be used for indexing.
     all_plot_data = {feature: pandas.DataFrame() for feature in keypoint_type}
     for feature in keypoint_type:
-        print(f"doing {feature}")
+        # print(f"doing {feature}")
         for rule_group in rules_selected_to_plot:
             if len(rule_group) == 0:
                 continue
@@ -289,8 +289,8 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
                 "make sure that no-rule-orig-landmarks is selected in the metamorphic rules to plot gt")
 
 
-    print("full dataset to plot")
-    print(all_plot_data)
+    # print("full dataset to plot")
+    # print(all_plot_data)
 
     latex_table = None
 
@@ -321,8 +321,8 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
 
                 histogram_df = pandas.concat([histogram_df, errors_df])
 
-        print("histogram_df:")
-        print(histogram_df)
+        # print("histogram_df:")
+        # print(histogram_df)
 
         def imgs_failed_per_num_rules(how_many_rules_we_count, rules_failed_per_img):
             if how_many_rules_we_count == "total images":
@@ -558,7 +558,7 @@ if __name__ == '__main__':
         input_rules_to_plot = input_rules_to_plot.split(",")
         rules_selected_to_plot = select_final_rules(input_rules_to_plot, False, coarse_possible_rules)
 
-    print(f"doing rules {rules_selected_to_plot}")
+    print(f"doing rules {rules_codename}, dataset {dataset}, kp_type {kp_type}, plot type {plot_type}")
 
     compute_graph(rules_selected_to_plot, kp_type, img_aggr, plot_type, dataset, error_threshold,
                   base_results_folder, range_error_thresholds, rules_codename)
