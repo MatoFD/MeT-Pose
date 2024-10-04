@@ -187,9 +187,11 @@ def table_subsumption(all_plot_data, rules, features, img_aggr, error_threshold)
     return fig, data
 
 
-def select_final_rules(rules_to_plot, plot_all_rules, all_possible_rules):
+def select_final_rules(rules_to_plot, plot_all_rules, all_possible_rules, all_motion_blur=False):
     if plot_all_rules:
         rules_to_plot = [[rule for rule in all_possible_rules[group]] for group in all_possible_rules.keys()]
+    elif all_motion_blur:
+        rules_to_plot = [all_possible_rules["img-motion-blur"]]
     else:
         for i, rules_list in enumerate(rules_to_plot):
             all_rules = any(["all_rules_in_" in specific_rule for specific_rule in rules_list])
@@ -551,7 +553,7 @@ if __name__ == '__main__':
     if input_rules_to_plot == "AllRels":
         rules_selected_to_plot = select_final_rules([], True, coarse_possible_rules)
     elif input_rules_to_plot == "all_rules_in_img-motion-blur":
-        rules_selected_to_plot = select_final_rules(input_rules_to_plot, False, coarse_possible_rules)
+        rules_selected_to_plot = select_final_rules([], False, coarse_possible_rules, True)
     else:
         input_rules_to_plot = input_rules_to_plot.split(",")
         rules_selected_to_plot = select_final_rules(input_rules_to_plot, False, coarse_possible_rules)
