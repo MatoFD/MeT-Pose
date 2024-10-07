@@ -25,7 +25,8 @@ rules_per_group = {
     "GreyscaleGT": "img-black-white,"
                    "no-rule-orig-landmarks",
     "GreyAndMirr": "img-mirror_1,img-black-white",
-    "AllMotionBlur": "all_rules_in_img-motion-blur"
+    "AllMotionBlur": "all_rules_in_img-motion-blur",
+    "FailedPerNumRulesTable": "FailedPerNumRulesTable"
 }
 
 # by default, do all the experiment including phoenix-dev, unless the user wants to skip it due to time and space constraints
@@ -118,7 +119,7 @@ for rules_codename in ['SubRels', "AllMotionBlur"]:
                         f'-rules_codename={rules_codename}',
                         f'-metR={rules_per_group[rules_codename]}'])
 
-rules_codename = "AllRels"
+rules_codename = "FailedPerNumRulesTable"
 for dataset in datasets:
     subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=pose',
                     '-plot_type=images_failed_per_num_of_rules',

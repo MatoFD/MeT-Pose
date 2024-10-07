@@ -187,9 +187,12 @@ def table_subsumption(all_plot_data, rules, features, img_aggr, error_threshold)
     return fig, data
 
 
-def select_final_rules(rules_to_plot, plot_all_rules, all_possible_rules, all_motion_blur=False):
+def select_final_rules(rules_to_plot, plot_all_rules, all_possible_rules, all_motion_blur=False, allRulesMinusIdent=False):
     if plot_all_rules:
         rules_to_plot = [[rule for rule in all_possible_rules[group]] for group in all_possible_rules.keys()]
+    elif allRulesMinusIdent:
+        rules_to_plot = [[rule for rule in all_possible_rules[group] if "identity" not in rule and "orig" not in rule]
+                         for group in all_possible_rules.keys()]
     elif all_motion_blur:
         rules_to_plot = [all_possible_rules["img-motion-blur"]]
     else:
@@ -351,8 +354,8 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
             table_df.insert(len(table_df.columns), f"{max_err}",
                             pd.Series([imgs_failed_per_num_rules(num_rules, current_error_failed_images_series) for num_rules in ranges_of_number_of_rules_failed]))
 
-        print("table_df:")
-        print(table_df)
+        # print("table_df:")
+        # print(table_df)
 
         plotted_dataframe = table_df
         fig = None
@@ -449,8 +452,8 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
 
         if plot_type == "histogram_failed_images_across_thresholds":
             histogram_df.drop("failed_images", inplace=True, axis=1)
-        print("final histogram df to plot")
-        print(histogram_df)
+        # print("final histogram df to plot")
+        # print(histogram_df)
         plotted_dataframe = histogram_df
         fig = px.bar(histogram_df, x="plot_thresholds", y="error_counts", text="error_counts",
                      pattern_shape="feature", color="feature", pattern_shape_sequence=["", "+", "/"],
@@ -477,7 +480,7 @@ def compute_graph(rules_selected_to_plot, keypoint_type, aggregation_metric, plo
         )
         fig.write_image(f"{plots_folder}/{plot_type}_{keypoint_type}_{dataset}_{rules_codename}.pdf")
 
-    print(f"plotted_dataframe: \n {plotted_dataframe}")
+    print(f"plotted dataframe: \n {plotted_dataframe}")
     plotted_dataframe.to_csv(f"{plots_folder}/{plot_type}_{keypoint_type}_{dataset}_{rules_codename}.csv")
 
     if latex_table is not None:
@@ -552,6 +555,8 @@ if __name__ == '__main__':
     coarse_possible_rules = find_all_rules_results(base_results_folder, dataset)
     if input_rules_to_plot == "AllRels":
         rules_selected_to_plot = select_final_rules([], True, coarse_possible_rules)
+    elif input_rules_to_plot == "FailedPerNumRulesTable":
+        rules_selected_to_plot = select_final_rules([], False, coarse_possible_rules, allRulesMinusIdent=True)
     elif input_rules_to_plot == "all_rules_in_img-motion-blur":
         rules_selected_to_plot = select_final_rules([], False, coarse_possible_rules, True)
     else:
