@@ -1,29 +1,22 @@
 import subprocess
 import sys
 
+SubRels = ("identity,img-black-white,img-blur_10_3,img-blur_125_5,img-blur_80_7,"
+           "img-dark-bright_20_0.8_1.2_scale,img-dark-bright_20_1.2_0.5_gamma,"
+           "img-masked_background_img-color-wheel_90,img-masked_hair_img-color-wheel_90,"
+           "img-mirror_1,"
+           "img-motion-blur_11_0,img-motion-blur_11_100,img-resolution_0.2,"
+           "img-resolution_0.7,'img-rotation_5_(0.5, 0.5)','img-rotation_10_(0.5, 0.5)',"
+           "img-stretch_1.25_1,img-stretch_1_0.6,img-stretch_1_0.8"
+           )
 rules_per_group = {
     "AllRels": "AllRels",
-    "SubRels": "identity,img-black-white,no-rule-orig-landmarks,img-blur_10_3,img-blur_125_5,img-blur_80_7,"
-               "img-dark-bright_20_0.8_1.2_scale,img-dark-bright_20_1.2_0.5_gamma,"
-               "img-mirror_1,"
-               "img-motion-blur_11_0,img-motion-blur_11_100,img-resolution_0.2,"
-               "img-resolution_0.7,img-rotation_5_(0.5, 0.5),img-rotation_10_(0.5, 0.5),"
-               "img-stretch_1.25_1,img-stretch_1_0.6,img-stretch_1_0.8,"
-               "img-masked_background_img-color-wheel_90,img-masked_hair_img-color-wheel_90",
-    "SubRelsGT": "identity,img-black-white,no-rule-orig-landmarks,img-blur_10_3,img-blur_125_5,img-blur_80_7,"
-               "img-dark-bright_20_0.8_1.2_scale,img-dark-bright_20_1.2_0.5_gamma,"
-               "img-mirror_1,"
-               "img-motion-blur_11_0,img-motion-blur_11_100,img-resolution_0.2,"
-               "img-resolution_0.7,img-rotation_5_(0.5, 0.5),img-rotation_10_(0.5, 0.5),"
-               "img-stretch_1.25_1,img-stretch_1_0.6,img-stretch_1_0.8,"
-               "img-masked_background_img-color-wheel_90,img-masked_hair_img-color-wheel_90,"
-               "no-rule-orig-landmarks",
+    "SubRels": SubRels,
+    "SubRelsGT": SubRels+",no-rule-orig-landmarks",
     "MirrorH": "img-mirror_1",
-    "MirrorHGT": "img-mirror_1,"
-                 "no-rule-orig-landmarks",
+    "MirrorHGT": "img-mirror_1,no-rule-orig-landmarks",
     "Greyscale": "img-black-white",
-    "GreyscaleGT": "img-black-white,"
-                   "no-rule-orig-landmarks",
+    "GreyscaleGT": "img-black-white,no-rule-orig-landmarks",
     "GreyAndMirr": "img-mirror_1,img-black-white",
     "AllMotionBlur": "all_rules_in_img-motion-blur",
     "FailedPerNumRulesTable": "FailedPerNumRulesTable"

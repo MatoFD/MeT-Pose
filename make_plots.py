@@ -560,7 +560,10 @@ if __name__ == '__main__':
     elif input_rules_to_plot == "all_rules_in_img-motion-blur":
         rules_selected_to_plot = select_final_rules([], False, coarse_possible_rules, True)
     else:
+        input_rules_to_plot = input_rules_to_plot.replace("(0.5, 0.5)", "(0.5: 0.5)")
         input_rules_to_plot = input_rules_to_plot.split(",")
+        input_rules_to_plot = [rule.replace("(0.5: 0.5)", "(0.5, 0.5)") for rule in input_rules_to_plot]
+        input_rules_to_plot = [rule.strip("'") for rule in input_rules_to_plot]
         rules_selected_to_plot = select_final_rules(input_rules_to_plot, False, coarse_possible_rules)
 
     print(f"doing rules {rules_codename}, dataset {dataset}, kp_type {kp_type}, plot type {plot_type}")
