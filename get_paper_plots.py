@@ -87,7 +87,7 @@ for rules_codename in ['AllRels', 'SubRels', "GreyAndMirr"]:
 if include_phoenix_processing:
     for rules_codename in ["MirrorH", "Greyscale"]:
         dataset = 'phoenix-dev'
-        subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=left_hand', 'right_hand',
+        subprocess.run(['python', './make_plots.py', f'-dataset={dataset}', '-kp_type=left_hand', '-kp_type=right_hand',
                         '-plot_type=histogram_failed_images_across_thresholds',
                         f'-rules_codename={rules_codename}',
                         f'-metR={rules_per_group[rules_codename]}'])
