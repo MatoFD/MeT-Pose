@@ -23,14 +23,14 @@ rules_per_group = {
 }
 
 # by default, do all the experiment including phoenix-dev, unless the user wants to skip it due to time and space constraints
-if "no_phoenix" in sys.argv:
+if "-no_phoenix" in sys.argv:
     include_phoenix_processing = False
     print("skipping phoenix, only doing FLIC")
 else:
     include_phoenix_processing = True
 
 # by default, we do not need to save modified images every time
-if "save_imgs" in sys.argv:
+if "-save_imgs" in sys.argv:
     save_mod_imgs = True
     print("Saving modified images")
 else:
