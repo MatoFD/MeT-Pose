@@ -194,7 +194,7 @@ def select_final_rules(rules_to_plot, plot_all_rules, all_possible_rules, all_mo
         rules_to_plot = [[rule for rule in all_possible_rules[group] if "identity" not in rule and "orig" not in rule]
                          for group in all_possible_rules.keys()]
     elif all_motion_blur:
-        rules_to_plot = [all_possible_rules["img-motion-blur"]]
+        rules_to_plot = [[rule for rule in all_possible_rules["img-motion-blur"] if "1_40" not in rule]]
     else:
         for i, rules_list in enumerate(rules_to_plot):
             all_rules = any(["all_rules_in_" in specific_rule for specific_rule in rules_list])
